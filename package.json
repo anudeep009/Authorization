@@ -1,0 +1,28 @@
+{
+  "name": "authorization",
+  "version": "1.0.0",
+  "description": "a secure user authentication and authorization system using express.js",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anudeep009/Authorization.git"
+  },
+  "keywords": [
+    "authorization"
+  ],
+  "author": "anudeep_avula",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anudeep009/Authorization/issues"
+  },
+  "homepage": "https://github.com/anudeep009/Authorization#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.0"
+  }
+}
