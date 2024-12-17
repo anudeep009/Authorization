@@ -70,7 +70,9 @@ BASE_URL=productionURL
 
 4. Open your browser and navigate to the local development server (e.g., `http://localhost:3000`).
 
-5. ## Folder Structure
+5.[Postman Api Documentation](https://documenter.getpostman.com/view/34250853/2sAYJ1j2CX)
+
+6. ## Folder Structure
 
 ```
 Authorization/
