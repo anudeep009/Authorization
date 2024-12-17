@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { rateLimiter } from "../middlewares/rateLimiter.js";
-import { signUp, signIn } from "../controllers/auth.controller.js";
+import {
+  signUp,
+  signIn,
+  forgotPassword,
+  resetPassword,
+} from "../controllers/auth.controller.js";
 
 const router = Router();
 
@@ -9,6 +14,10 @@ router.use(rateLimiter);
 
 //authentication-routes
 router.post("/signup", signUp);
-router.post("/signin",signIn);
+router.post("/signin", signIn);
+
+// Forgot & Reset Password Route
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;
