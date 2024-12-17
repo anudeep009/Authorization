@@ -4,9 +4,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import User from "../models/user.model.js";
+import logger from "../utils/logger.js";
 
 const signUp = async (req, res) => {
   const { email, password, role } = req.body;
+  logger.info("Sign-up attempt.", { email, ip: req.ip });
 
   try {
     if (!email || !password)
@@ -38,10 +40,11 @@ const signUp = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     await User.create({ email, password: hashedPassword, role: userRole });
-
+    logger.info("User signed up successfully.", { email });
     return res.status(201).send({ message: "User signed up successfully" });
   } catch (error) {
     console.error("Error during sign up:", error);
+    logger.error("Sign-up failed.", { error: error.message });
     return res
       .status(500)
       .send({ message: "Error during sign up", error: error.message });
@@ -50,7 +53,7 @@ const signUp = async (req, res) => {
 
 const signIn = async (req, res) => {
   const { email, password } = req.body;
-
+  logger.info("Sign-in attempt.", { ip: req.ip });
   try {
     if (!email || !password)
       return res.status(400).json({ error: "email and Password is required" });
@@ -81,12 +84,13 @@ const signIn = async (req, res) => {
       sameSite: "strict",
       maxAge: 3600000,
     });
-
+    logger.info("User signed in successfully.", { email });
     return res.status(200).send({
       message: "Login successfull",
     });
   } catch (error) {
     console.error("Error during sign in:", error);
+    logger.error("Sign-in failed.", { error: error.message });
     return res
       .status(500)
       .send({ message: "Error during sign in", error: error.message });
