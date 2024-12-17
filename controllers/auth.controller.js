@@ -4,13 +4,11 @@ import { z } from "zod";
 import User from "../models/user.model.js";
 
 const signUp = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
     if (!email || !password)
-      return res
-        .status(400)
-        .json({ error: "email and Password is required" });
+      return res.status(400).json({ error: "email and Password is required" });
     //  email-validation
     z.string().email("Invalid email format").parse(email);
 
@@ -26,6 +24,8 @@ const signUp = async (req, res) => {
       )
       .parse(password);
 
+    const userRole = role && role === "admin" ? "admin" : "user";
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res
@@ -35,7 +35,7 @@ const signUp = async (req, res) => {
     const saltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    await User.create({ email, password: hashedPassword });
+    await User.create({ email, password: hashedPassword, role: userRole });
 
     return res.status(201).send({ message: "User signed up successfully" });
   } catch (error) {
@@ -51,9 +51,7 @@ const signIn = async (req, res) => {
 
   try {
     if (!email || !password)
-      return res
-        .status(400)
-        .json({ error: "email and Password is required" });
+      return res.status(400).json({ error: "email and Password is required" });
 
     const user = await User.findOne({ email });
     if (!user) {
@@ -69,14 +67,11 @@ const signIn = async (req, res) => {
     const payload = {
       id: user._id,
       email: user.email,
+      role: user.role,
     };
-    const token = jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -86,7 +81,7 @@ const signIn = async (req, res) => {
     });
 
     return res.status(200).send({
-      message: "Login successfull"
+      message: "Login successfull",
     });
   } catch (error) {
     console.error("Error during sign in:", error);
