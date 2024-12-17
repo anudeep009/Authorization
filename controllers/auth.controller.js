@@ -7,6 +7,10 @@ const signUp = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    if (!email || !password)
+      return res
+        .status(400)
+        .json({ error: "email and Password is required" });
     //  email-validation
     z.string().email("Invalid email format").parse(email);
 
@@ -28,10 +32,10 @@ const signUp = async (req, res) => {
         .status(400)
         .send({ message: "User already exists, please log in" });
     }
+    const saltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = await User.create({ email, password: hashedPassword });
+    await User.create({ email, password: hashedPassword });
 
     return res.status(201).send({ message: "User signed up successfully" });
   } catch (error) {
@@ -42,5 +46,54 @@ const signUp = async (req, res) => {
   }
 };
 
+const signIn = async (req, res) => {
+  const { email, password } = req.body;
 
-export { signUp };
+  try {
+    if (!email || !password)
+      return res
+        .status(400)
+        .json({ error: "email and Password is required" });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .send({ message: "User not found. Please sign up." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).send({ message: "Invalid email or password" });
+    }
+    const payload = {
+      id: user._id,
+      email: user.email,
+    };
+    const token = jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600000,
+    });
+
+    return res.status(200).send({
+      message: "Login successfull"
+    });
+  } catch (error) {
+    console.error("Error during sign in:", error);
+    return res
+      .status(500)
+      .send({ message: "Error during sign in", error: error.message });
+  }
+};
+
+export { signUp, signIn };
